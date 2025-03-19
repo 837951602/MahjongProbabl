@@ -1,0 +1,105 @@
+<html>
+<head>
+<title>Single Mahjong with probable force</title>
+</head>
+<body>
+<div id="thrown"></div>
+<div id="hand"></div>
+<textarea id="consol" readonly></textarea>
+</body>
+<script type="text/javascript">
+var cards;
+var current;
+function restart() {
+  thrown.innerHTML = consol.value = '';
+  var i, j, k;
+  cards = [11,12,13,14,15,16,17,18,19,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,37,38,39,41,43,45,51,53,55,57];
+  for(i=0; i<34*3; ++i) cards.push(cards[i]);
+  for(i=34*4; i; ) {
+    j = Math.random()*i-- | 0;
+    k = cards[j]; cards[j]=cards[i]; cards[i]=k;
+  }
+  current = cards.splice(0,13);
+  drawcard();
+}
+function drawcard() {
+  if(cards.length==0) {
+    log('Out of cards, you lose!');
+    showcards(true);
+    return;
+  }
+  current.push(cards.pop());
+  current.sort();
+  var _i, i, j, s, v;
+  for(_i=0; _i<14; ++_i) { // 常规
+    i = current[_i];
+    if (i==current[_i-1] && i!=current[_i+1]) {
+      s = current.slice(0,_i-1).concat(current.slice(_i+1));
+      while (1) {
+        v = s[0];
+        if (v==s[1] && v==s[2]) {
+          s.splice(0,3);
+        } else {
+          s.splice(0,1);
+          j = 0;
+          ++v;
+          while(s[j]<v) ++j;
+          if(s[j]>v) break;
+          s.splice(j,1);
+          ++v;
+          while(s[j]<v) ++j;
+          if(s[j]>v) break;
+          s.splice(j,1);
+        }
+        if (s.length == 0) {
+          _i = 100;
+          break;
+        }
+      }
+    }
+  }
+  if(_i<100) for (i=0; i<14; i+=2) {  // 七对子
+    if (current[i]==current[i+1] && current[i]!=current[i+2]); else break;
+  }
+  if (i==14) _i=110;
+  if(_i<100) for (i=j=0; i<14; ++i) {  // 十三幺
+    if (current[i]==current[i+1]) continue;
+    if (current[i]!=[11,19,21,29,31,39,41,43,45,51,53,55,57][j]) break;
+  }
+  if (j==13 && i==14) _i=110;
+  if (_i>100) {
+    log('You win!');
+    showcards(true);
+    return;
+  }
+  if (Math.random() < 14/54) {
+    j = Math.random() * 14 | 0;
+    showcards(true);
+    log("You're forced to use card "+current[j]);
+    setTimeout(function(){xclick(j)}, 500);
+  } else {
+    showcards(false);
+    log('Choose a card');
+  }
+}
+function showcards(lock) {
+  var i, s=[];
+  for (i=0; i<current.length; ++i) {
+    s[i] = '<img id="btn'+i+'" src="image/'+current[i]+'.png"'+(lock?'':' onclick="xclick('+i+')"')+' >';
+  }
+  hand.innerHTML = s.join('');
+}
+function xclick(id) {
+  var node = document.createElement("IMG");
+  node.src = 'image/' + current[id] + '.png';
+  thrown.appendChild(node);
+  current.splice(id,1);
+  drawcard();
+}
+function log(x) {
+  consol.value += '\n' + x;
+  consol.scrollTop=10000;
+}
+restart();
+</script>
+</html>
