@@ -21,6 +21,7 @@ function restart() {
   }
   current = cards.splice(0,13);
   drawcard();
+  consol.value = 'Initially ' + current;
 }
 function drawcard() {
   if(cards.length==0) {
@@ -76,7 +77,7 @@ function drawcard() {
     j = Math.random() * 14 | 0;
     showcards(true);
     log("You're forced to use card "+current[j]);
-    setTimeout(function(){xclick(j)}, 500);
+    setTimeout(function(){xclick(j,1)}, 500);
   } else {
     showcards(false);
     log('Choose a card');
@@ -89,9 +90,10 @@ function showcards(lock) {
   }
   hand.innerHTML = s.join('');
 }
-function xclick(id) {
+function xclick(id, y) {
   var node = document.createElement("IMG");
   node.src = 'image/' + current[id] + '.png';
+  if (y) node.style.filter = 'sepia(1)';
   thrown.appendChild(node);
   current.splice(id,1);
   drawcard();
